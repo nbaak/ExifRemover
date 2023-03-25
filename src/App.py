@@ -34,8 +34,11 @@ def show_exif_data(path):
     if exif:
         for k, v in exif.items():
             print(k, v)
+            
+        return True
     else:
         print("no exif data found")
+        return False
 
 
 def remove_exif(path, save_path=None):
@@ -64,29 +67,31 @@ def _is_image(path):
 def file_scan(path:Path, scan=False, remove=False):
     if _is_image(path):
         print(f"scan file: {path.resolve()}")
-    
+        try_remove = True
+        
         if scan:
-            show_exif_data(path)
+            try_remove = show_exif_data(path)
             print()
             
-        if remove:
+        if remove and try_remove:
             print('removing exif data')
             remove_exif(path, path)
 
 
 def folder_scan(path, scan=False, remove=False):
     print(f"scan folder: {path.resolve()}")
-    files = list(filter(_is_image, path.glob('**/*')))
+    files = list(filter(_is_image and Path.is_file, path.glob('**/*')))
     
     for file in files:
         print(file.resolve())
-        if scan:
-            show_exif_data(path)
-            print()
-            
-        if remove:
-            print('removing exif data')
-            remove_exif(file, file)
+        if _is_image(file.resolve()):
+            if scan:
+                show_exif_data(file.resolve())
+                print()
+                
+            if remove:
+                print('removing exif data')
+                remove_exif(file, file)
 
 
 def main():
