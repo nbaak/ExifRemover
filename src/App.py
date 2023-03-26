@@ -3,6 +3,8 @@
 from PIL import Image, ExifTags, UnidentifiedImageError
 from pathlib import Path
 import argparse
+import os
+import tempfile
 
 
 def test():
@@ -48,7 +50,8 @@ def remove_exif(path, save_path=None):
     clean_image.putdata(data)
     
     if save_path:
-        clean_image.save(save_path)
+        print('Image should be:', image.format) 
+        clean_image.save(save_path, exif=b'')
     
     return clean_image
 
@@ -56,9 +59,17 @@ def remove_exif(path, save_path=None):
 def _is_image(path):
     try:
         image = Image.open(path)
+        file_name = path.name
+        
+        image.save(f"{tempfile.gettempdir()}/{file_name}")
+        os.remove(f"{tempfile.gettempdir()}/{file_name}")        
+        
         return True
     
     except UnidentifiedImageError:
+        return False
+    
+    except ValueError:
         return False
     
     return False
